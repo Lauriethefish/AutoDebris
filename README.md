@@ -1,6 +1,6 @@
 # AutoDebris
 
-Automatically enables or disables debris based on your NPS or playlist
+A Quest Beat Saber mod that automatically enables or disables debris depending on the Notes Per Second or playlist of a song.
 
 ## Credits
 

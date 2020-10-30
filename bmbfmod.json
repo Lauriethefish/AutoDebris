@@ -1,7 +1,7 @@
 {
   "id": "auto-debris",
   "name": "AutoDebris",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": "TheProff#6700",
   "description": [
     "Automatically enables or disables debris based on your NPS or playlist"
@@ -13,10 +13,10 @@
     {
       "type": "HookMod",
       "installAction": {
-        "installLibraryFile": "libauto-debris_0_1_0.so"
+        "installLibraryFile": "libauto-debris_0_1_1.so"
       },
       "uninstallAction": {
-        "removeLibraryFile": "libauto-debris_0_1_0.so"
+        "removeLibraryFile": "libauto-debris_0_1_1.so"
       }
     },
     {

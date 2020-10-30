@@ -6,5 +6,5 @@ if (-not ($PSVersionTable.PSEdition -eq "Core")) {
 }
 
 & $buildScript NDK_PROJECT_PATH=$PSScriptRoot APP_BUILD_SCRIPT=$PSScriptRoot/Android.mk NDK_APPLICATION_MK=$PSScriptRoot/Application.mk
-& adb push libs/arm64-v8a/libauto-debris_0_1_0.so /sdcard/Android/data/com.beatgames.beatsaber/files/mods/libauto-debris_0_1_0.so
+& adb push libs/arm64-v8a/libauto-debris_0_1_1.so /sdcard/Android/data/com.beatgames.beatsaber/files/mods/libauto-debris_0_1_1.so
 & adb shell am force-stop com.beatgames.beatsaber

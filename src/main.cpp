@@ -221,11 +221,12 @@ extern "C" void load() {
     getLogger().info("Installing hooks...");
     il2cpp_functions::Init();
 
+    QuestUI::Init();
+
     // Register our custom ViewController type
     custom_types::Register::RegisterType<AutoDebrisViewController>();
 
     // Register our mod settings menu
-    QuestUI::Init();
     QuestUI::Register::RegisterModSettingsViewController<AutoDebrisViewController*>(modInfo);
 
     // Install our hooks

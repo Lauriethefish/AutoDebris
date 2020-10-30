@@ -80,7 +80,7 @@ void AutoDebrisViewController::DidActivate(bool firstActivation, bool addedToHie
         UnityEngine::UI::LayoutElement* modeLayoutElement = modeLayout->GetComponent<UnityEngine::UI::LayoutElement*>();
         modeLayoutElement->set_preferredWidth(100.0);
         modeLayoutElement->set_preferredHeight(15.0);
-        QuestUI::BeatSaberUI::AddHoverHint(modeLayout->get_gameObject(), "Chooses whether you want the mod to enable reduce debris or disable reduce debris.\nClick the button to change");
+        QuestUI::BeatSaberUI::AddHoverHint(modeLayout->get_gameObject(), "Chooses whether you want the mod to enable reduce debris or disable reduce debris.\nClick the button to change.");
 
         // Add some text to explain what the toggle is for
         QuestUI::BeatSaberUI::CreateText(modeLayout->get_rectTransform(), "Choose mode");
@@ -95,6 +95,7 @@ void AutoDebrisViewController::DidActivate(bool firstActivation, bool addedToHie
         UnityEngine::UI::LayoutElement* thresholdLayoutElement = thresholdLayout->GetComponent<UnityEngine::UI::LayoutElement*>();
         thresholdLayoutElement->set_preferredWidth(60.0);
         thresholdLayoutElement->set_preferredHeight(10.0);
+        QuestUI::BeatSaberUI::AddHoverHint(thresholdLayout->get_gameObject(), "Notes per second threshold for when the debris setting will be overridden. If the mode is set to enable, the setting will be overriden if the NPS is above this, if set to disable, the setting will be overridden if the NPS is below this.");
 
         thresholdLayout->get_gameObject()->AddComponent<QuestUI::Backgroundable*>()->ApplyBackground(il2cpp_utils::createcsstr("round-rect-panel"));
         thresholdLayout->set_padding(UnityEngine::RectOffset::New_ctor(2, 2, 2, 2));

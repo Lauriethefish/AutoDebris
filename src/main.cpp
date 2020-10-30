@@ -220,7 +220,6 @@ extern "C" void setup(ModInfo& info) {
 extern "C" void load() {
     getLogger().info("Installing hooks...");
     il2cpp_functions::Init();
-
     QuestUI::Init();
 
     // Register our custom ViewController type

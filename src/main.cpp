@@ -53,30 +53,21 @@ Mode getOverrideMode()  {
     return overrideMode;
 }
 
-// Convenience function for converting a mode to a string
+// Convenience method for converting a mode to a string
 std::string modeToString(Mode mode)  {
     return (mode == Mode::ENABLE) ? "enable" : "disable";
 }
-/*
-static std::unordered_set<std::string> overriddenPlaylists;
-// Adds or removes from the overridden playlists
-void setPlaylistOverridden(std::string playlist, bool newSetting)    {
-    if(newSetting)  {
-        overriddenPlaylists->insert(playlist);
-    }   else    {
-        overrideenPlaylists->remove(playlist);
-    }
-}
 
-// Loads all of the overridden playlists from the config into a map for easy access
-void loadOverriddenPlaylists()  {
-    // Add each playlist to the map
-    for(rapidjson::Value& value : getConfig().config["playlists"].GetArray())    {
-        overriddenPlaylists.insert(value.GetString());
+// Convenience method for checking the rapidjson array for this playlist name, since there is no contains method
+bool isPlaylistOverridden(std::string name) {
+    // Check if this playlist is in the overridden playlists list.
+    for(rapidjson::Value& value : getConfig().config["playlists"].GetArray())   {
+        if(value.GetString() == name)   {
+            return true;
+        }
     }
+    return false; // Return false if the playlist wasn't found
 }
-
-void saveOverriddenPlaylists*/
 
 static bool willOverride = false;
 
@@ -170,16 +161,8 @@ MAKE_HOOK_OFFSETLESS(RefreshContent, void, StandardLevelDetailView* self)    {
     // Find the pack name
     std::string playlistName = to_utf8(csstrtostr(levelPack->get_packName()));
 
-    // Check if this playlist is in the overridden playlists list.
-    bool isOverriddenPlaylist = false;
-    for(rapidjson::Value& value : getConfig().config["playlists"].GetArray())   {
-        if(value.GetString() == playlistName)   {
-            isOverriddenPlaylist = true; break;
-        }
-    }
-
     // If it is, override the setting
-    if(isOverriddenPlaylist) {
+    if(isPlaylistOverridden(playlistName)) {
         getLogger().info("Playlist is set as overridden, overriding . . .");
         willOverride = true;
         return;

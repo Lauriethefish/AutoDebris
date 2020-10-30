@@ -25,6 +25,6 @@ std::string modeToString(Mode mode);
 Mode swapOverrideMode(); // Swaps the current override mode to the other value. Returns the new mode
 Mode getOverrideMode(); // Gets the current override mode
 
-// Adds this playlist to the map (for quick access) and to the config file
-//void setPlaylistOverridden(std::string name);
+// Convenience method for checking the rapidjson array for this playlist name, since there is no contains method
+bool isPlaylistOverridden(std::string name);
 

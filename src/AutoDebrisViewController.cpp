@@ -140,7 +140,8 @@ void AutoDebrisViewController::DidActivate(bool firstActivation, bool addedToHie
                 classof(UnityEngine::Events::UnityAction_1<bool>*), il2cpp_utils::createcsstr(playlistName), onPlaylistSettingChange);
 
             UnityEngine::UI::HorizontalLayoutGroup* playlistRow = QuestUI::BeatSaberUI::CreateHorizontalLayoutGroup(playlistsLayout->get_rectTransform());
-            UnityEngine::UI::Toggle* toggle = QuestUI::BeatSaberUI::CreateToggle(playlistRow->get_rectTransform(), playlistName, playlistToggleAction);
+            // Create the toggle, setting the current value to whether or not the playlist is overridden
+            UnityEngine::UI::Toggle* toggle = QuestUI::BeatSaberUI::CreateToggle(playlistRow->get_rectTransform(), playlistName, isPlaylistOverridden(playlistName), playlistToggleAction);
         }
     }
 }

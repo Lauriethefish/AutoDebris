@@ -1,4 +1,6 @@
 #include "main.hpp"
+#include "AutoDebrisViewController.hpp"
+using namespace AutoDebris;
 
 #include "GlobalNamespace/StandardLevelScenesTransitionSetupDataSO.hpp"
 #include "GlobalNamespace/IDifficultyBeatmap.hpp"
@@ -8,7 +10,6 @@
 #include "GlobalNamespace/StandardLevelDetailView.hpp"
 #include "GlobalNamespace/LevelParamsPanel.hpp"
 #include "GlobalNamespace/BeatmapLevelData.hpp"
-#include "GlobalNamespace/BeatmapLevelsModel.hpp"
 #include "GlobalNamespace/IBeatmapLevelPack.hpp"
 #include "GlobalNamespace/IBeatmapLevel.hpp"
 #include "GlobalNamespace/BeatmapData.hpp"
@@ -19,10 +20,11 @@
 #include "UnityEngine/SceneManagement/Scene.hpp"
 #include "UnityEngine/SceneManagement/SceneManager.hpp"
 
+#include "questui/shared/QuestUI.hpp"
+#include "custom-types/shared/register.hpp"
+
 #include <optional>
 #include <unordered_set>
-
-using namespace GlobalNamespace;
 
 static ModInfo modInfo;
 Configuration& getConfig() {
@@ -36,13 +38,45 @@ const Logger& getLogger() {
     return logger;
 }
 
-enum Mode   {
-    DISABLE = false,
-    ENABLE = true
-};
-
 static Mode overrideMode; // Whether we are enabling or disabling reduce debris
+Mode swapOverrideMode()  {
+    // Find the opposite mode and set it back
+    Mode newMode = (Mode) !((bool) overrideMode);
+    overrideMode = newMode;
+
+    // Save the swapped value back to the config
+    getConfig().config["mode"].SetString(modeToString(overrideMode), getConfig().config.GetAllocator());
+    return overrideMode;
+}
+
+Mode getOverrideMode()  {
+    return overrideMode;
+}
+
+// Convenience function for converting a mode to a string
+std::string modeToString(Mode mode)  {
+    return (mode == Mode::ENABLE) ? "enable" : "disable";
+}
+/*
 static std::unordered_set<std::string> overriddenPlaylists;
+// Adds or removes from the overridden playlists
+void setPlaylistOverridden(std::string playlist, bool newSetting)    {
+    if(newSetting)  {
+        overriddenPlaylists->insert(playlist);
+    }   else    {
+        overrideenPlaylists->remove(playlist);
+    }
+}
+
+// Loads all of the overridden playlists from the config into a map for easy access
+void loadOverriddenPlaylists()  {
+    // Add each playlist to the map
+    for(rapidjson::Value& value : getConfig().config["playlists"].GetArray())    {
+        overriddenPlaylists.insert(value.GetString());
+    }
+}
+
+void saveOverriddenPlaylists*/
 
 static bool willOverride = false;
 
@@ -84,13 +118,25 @@ MAKE_HOOK_OFFSETLESS(StandardLevelStart, void, StandardLevelScenesTransitionSetu
     StandardLevelStart(self, gameMode, difficultyBeatmap, overrideEnvironmentSettings, overrideColorScheme, gameplayModifiers, playerSpecificSettings, practiceSettings, backButtonText, useTestNoteCutSoundEffects, beforeSceneSwitchCallback, afterSceneSwitchCallback, levelFinishedCallback);
 }
 
-static BeatmapLevelsModel* levelsModel = nullptr;
+static BeatmapLevelsModel* beatmapLevelsModel = nullptr;
+// Finds the BeatmapLevelsModel, if it hasn't been found already
+BeatmapLevelsModel* getBeatmapLevelsModel() {
+    // If the model hasn't already been found, find it using Resources
+    if(!beatmapLevelsModel) {
+        beatmapLevelsModel = (*UnityEngine::Resources::FindObjectsOfTypeAll<BeatmapLevelsModel*>())[0];
+    }
+    return beatmapLevelsModel;
+}
+
+// Called whenever the user selects a difficulty of a level. Used to decide whether or not to override the debris setting
 MAKE_HOOK_OFFSETLESS(RefreshContent, void, StandardLevelDetailView* self)    {
     RefreshContent(self);
-
+    
+    // Find the selected difficulty
     IDifficultyBeatmap* difficulty = self->selectedDifficultyBeatmap;
     IBeatmapLevel* level = difficulty->get_level();
 
+    // If the NPS threshold is enabled
     float npsThreshold = getConfig().config["notesPerSecondThreshold"].GetFloat();
     if(npsThreshold > 0)    {
         getLogger().info("Checking NPS threshold . . .");
@@ -115,25 +161,28 @@ MAKE_HOOK_OFFSETLESS(RefreshContent, void, StandardLevelDetailView* self)    {
         }
     }
 
-    if(overriddenPlaylists.size() > 0)   {
-        getLogger().info("Checking song playlist . . .");
+    // Check the song's playlist to see if we need to override
+    getLogger().info("Checking song playlist . . .");
 
-        // If we haven't found the BeatMapLevelsModel, find it now
-        if(!levelsModel)    {
-            levelsModel = (*UnityEngine::Resources::FindObjectsOfTypeAll<BeatmapLevelsModel*>())[0];
+    // Reinterpret this level as an IPreviewBeatmapLevel, then find the level pack it is in
+    IPreviewBeatmapLevel* previewLevel = reinterpret_cast<IPreviewBeatmapLevel*>(level);
+    IBeatmapLevelPack* levelPack = getBeatmapLevelsModel()->GetLevelPackForLevelId(previewLevel->get_levelID());
+    // Find the pack name
+    std::string playlistName = to_utf8(csstrtostr(levelPack->get_packName()));
+
+    // Check if this playlist is in the overridden playlists list.
+    bool isOverriddenPlaylist = false;
+    for(rapidjson::Value& value : getConfig().config["playlists"].GetArray())   {
+        if(value.GetString() == playlistName)   {
+            isOverriddenPlaylist = true; break;
         }
+    }
 
-        // Reinterpret this level as an IPreviewBeatmapLevel, then find the level pack it is in
-        IPreviewBeatmapLevel* previewLevel = reinterpret_cast<IPreviewBeatmapLevel*>(level);
-        IBeatmapLevelPack* levelPack = levelsModel->GetLevelPackForLevelId(previewLevel->get_levelID());
-        // Find the pack name
-        std::string playlistName = to_utf8(csstrtostr(levelPack->get_packName()));
-
+    // If it is, override the setting
+    if(isOverriddenPlaylist) {
         getLogger().info("Playlist is set as overridden, overriding . . .");
-        if(overriddenPlaylists.contains(playlistName)) {
-            willOverride = true;
-            return;
-        }
+        willOverride = true;
+        return;
     }
 
     willOverride = false;
@@ -164,10 +213,6 @@ extern "C" void setup(ModInfo& info) {
     // Find the mode that we're using
     std::string modeString =  getConfig().config["mode"].GetString();
     overrideMode = modeString == "enable" ? ENABLE : DISABLE;
-    // Add each playlist to the map
-    for(rapidjson::Value& value : getConfig().config["playlists"].GetArray())    {
-        overriddenPlaylists.insert(value.GetString());
-    }
 
     getLogger().info("Completed setup!");
 }
@@ -175,6 +220,13 @@ extern "C" void setup(ModInfo& info) {
 extern "C" void load() {
     getLogger().info("Installing hooks...");
     il2cpp_functions::Init();
+
+    // Register our custom ViewController type
+    custom_types::Register::RegisterType<AutoDebrisViewController>();
+
+    // Register our mod settings menu
+    QuestUI::Init();
+    QuestUI::Register::RegisterModSettingsViewController<AutoDebrisViewController*>(modInfo);
 
     // Install our hooks
     INSTALL_HOOK_OFFSETLESS(RefreshContent, il2cpp_utils::FindMethodUnsafe("", "StandardLevelDetailView", "RefreshContent", 0));

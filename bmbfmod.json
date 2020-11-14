@@ -2,6 +2,8 @@
   "id": "auto-debris",
   "name": "AutoDebris",
   "version": "0.1.2",
+  "icon": "cover.jpg",
+  "coverImageFilename": "cover.jpg",
   "author": "TheProff#6700",
   "description": [
     "Automatically enables or disables debris based on your NPS or playlist"

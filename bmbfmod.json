@@ -1,7 +1,7 @@
 {
   "id": "auto-debris",
   "name": "AutoDebris",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "icon": "cover.jpg",
   "coverImageFilename": "cover.jpg",
   "author": "TheProff#6700",
@@ -15,10 +15,10 @@
     {
       "type": "HookMod",
       "installAction": {
-        "installLibraryFile": "libauto-debris_0_1_2.so"
+        "installLibraryFile": "libauto-debris_0_1_3.so"
       },
       "uninstallAction": {
-        "removeLibraryFile": "libauto-debris_0_1_2.so"
+        "removeLibraryFile": "libauto-debris_0_1_3.so"
       }
     },
     {

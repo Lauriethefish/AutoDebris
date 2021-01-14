@@ -8,4 +8,4 @@ if (-not ($PSVersionTable.PSEdition -eq "Core")) {
 
 & $buildScript NDK_PROJECT_PATH=$PSScriptRoot APP_BUILD_SCRIPT=$PSScriptRoot/Android.mk NDK_APPLICATION_MK=$PSScriptRoot/Application.mk
 
-Compress-Archive -Path "./libs/arm64-v8a/libauto-debris_0_1_3.so", "./extern/libbeatsaber-hook_0_8_4.so", "./extern/libquestui.so", "./extern/libcustom-types.so", "./bmbfmod.json", "cover.jpg" -DestinationPath "./auto-debris_v0.1.3.zip" -Update
+Compress-Archive -Path "./libs/arm64-v8a/libauto-debris.so", "./extern/libbeatsaber-hook_1_0_9.so", "./extern/libcodegen_0_5_3.so", "./extern/libquestui.so", "./extern/libcustom-types.so", "./bmbfmod.json", "cover.jpg" -DestinationPath "./auto-debris_v0.1.4.zip" -Update

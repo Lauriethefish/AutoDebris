@@ -33,9 +33,9 @@ Configuration& getConfig() {
     return config;
 }
 
-const Logger& getLogger() {
-    static const Logger logger(modInfo);
-    return logger;
+Logger& getLogger() {
+    static Logger* logger = new Logger(modInfo);
+    return *logger;
 }
 
 static Mode overrideMode; // Whether we are enabling or disabling reduce debris
@@ -212,8 +212,8 @@ extern "C" void load() {
     QuestUI::Register::RegisterModSettingsViewController<AutoDebrisViewController*>(modInfo);
 
     // Install our hooks
-    INSTALL_HOOK_OFFSETLESS(RefreshContent, il2cpp_utils::FindMethodUnsafe("", "StandardLevelDetailView", "RefreshContent", 0));
-    INSTALL_HOOK_OFFSETLESS(StandardLevelStart, il2cpp_utils::FindMethodUnsafe("", "MenuTransitionsHelper", "StartStandardLevel", 12));
+    INSTALL_HOOK_OFFSETLESS(getLogger(), RefreshContent, il2cpp_utils::FindMethodUnsafe("", "StandardLevelDetailView", "RefreshContent", 0));
+    INSTALL_HOOK_OFFSETLESS(getLogger(), StandardLevelStart, il2cpp_utils::FindMethodUnsafe("", "MenuTransitionsHelper", "StartStandardLevel", 12));
 
     getLogger().info("Installed all hooks!");
 }

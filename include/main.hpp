@@ -10,7 +10,7 @@
 using namespace GlobalNamespace;
 
 Configuration& getConfig();
-const Logger& getLogger();
+Logger& getLogger();
 
 // Convenience method for finding the BeatmapLevelsModel if it hasn't been found already.
 BeatmapLevelsModel* getBeatmapLevelsModel();

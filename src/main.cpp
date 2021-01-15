@@ -14,6 +14,10 @@ using namespace AutoDebris;
 #include "GlobalNamespace/IBeatmapLevel.hpp"
 #include "GlobalNamespace/BeatmapData.hpp"
 #include "GlobalNamespace/PlayerSpecificSettings.hpp"
+#include "GlobalNamespace/BeatmapDifficulty.hpp"
+#include "GlobalNamespace/BeatmapCharacteristicSO.hpp"
+#include "GlobalNamespace/BeatmapSelectionView.hpp"
+#include "GlobalNamespace/MenuTransitionsHelper.hpp"
 
 #include "UnityEngine/Resources.hpp"
 #include "UnityEngine/AudioClip.hpp"
@@ -92,41 +96,7 @@ PlayerSpecificSettings* cloneSettings(PlayerSpecificSettings* settings) {
     return clone;
 }
 
-// Very large hook called when a level is starting
-MAKE_HOOK_OFFSETLESS(StandardLevelStart, void, StandardLevelScenesTransitionSetupDataSO* self, Il2CppString* gameMode,
-                    IDifficultyBeatmap* difficultyBeatmap, OverrideEnvironmentSettings* overrideEnvironmentSettings,
-                    ColorScheme* overrideColorScheme, GameplayModifiers* gameplayModifiers,
-                    PlayerSpecificSettings* playerSpecificSettings, PracticeSettings* practiceSettings,
-                    Il2CppString* backButtonText, bool useTestNoteCutSoundEffects, 
-                    Il2CppObject* beforeSceneSwitchCallback, Il2CppObject* afterSceneSwitchCallback, Il2CppObject* levelFinishedCallback)    {    
-    // If we need to override the setting, store the previous setting and then override it
-    if(willOverride)    {
-        getLogger().info("Overriding setting on level start . . .");
-        playerSpecificSettings = cloneSettings(playerSpecificSettings);
-        playerSpecificSettings->reduceDebris = overrideMode;
-    }
-
-    StandardLevelStart(self, gameMode, difficultyBeatmap, overrideEnvironmentSettings, overrideColorScheme, gameplayModifiers, playerSpecificSettings, practiceSettings, backButtonText, useTestNoteCutSoundEffects, beforeSceneSwitchCallback, afterSceneSwitchCallback, levelFinishedCallback);
-}
-
-static BeatmapLevelsModel* beatmapLevelsModel = nullptr;
-// Finds the BeatmapLevelsModel, if it hasn't been found already
-BeatmapLevelsModel* getBeatmapLevelsModel() {
-    // If the model hasn't already been found, find it using Resources
-    if(!beatmapLevelsModel) {
-        beatmapLevelsModel = (*UnityEngine::Resources::FindObjectsOfTypeAll<BeatmapLevelsModel*>())[0];
-    }
-    return beatmapLevelsModel;
-}
-
-// Called whenever the user selects a difficulty of a level. Used to decide whether or not to override the debris setting
-MAKE_HOOK_OFFSETLESS(RefreshContent, void, StandardLevelDetailView* self)    {
-    RefreshContent(self);
-    
-    // Find the selected difficulty
-    IDifficultyBeatmap* difficulty = self->selectedDifficultyBeatmap;
-    IBeatmapLevel* level = difficulty->get_level();
-
+void overrideIfNecessary(IBeatmapLevel* level, IDifficultyBeatmap* difficulty) {
     // If the NPS threshold is enabled
     float npsThreshold = getConfig().config["notesPerSecondThreshold"].GetFloat();
     if(npsThreshold > 0)    {
@@ -171,6 +141,67 @@ MAKE_HOOK_OFFSETLESS(RefreshContent, void, StandardLevelDetailView* self)    {
     willOverride = false;
 }
 
+// Very large hook called when a level is starting
+MAKE_HOOK_OFFSETLESS(MenuTransitionsHelper_StartStandardLevel, void, StandardLevelScenesTransitionSetupDataSO* self, Il2CppString* gameMode,
+                    IDifficultyBeatmap* difficultyBeatmap, OverrideEnvironmentSettings* overrideEnvironmentSettings,
+                    ColorScheme* overrideColorScheme, GameplayModifiers* gameplayModifiers,
+                    PlayerSpecificSettings* playerSpecificSettings, PracticeSettings* practiceSettings,
+                    Il2CppString* backButtonText, bool useTestNoteCutSoundEffects, 
+                    Il2CppObject* beforeSceneSwitchCallback, Il2CppObject* afterSceneSwitchCallback, Il2CppObject* levelFinishedCallback)    {    
+    // If we need to override the setting, make a new copy of the player settings and change it
+    if(willOverride)    {
+        getLogger().info("Overriding setting on level start . . .");
+        playerSpecificSettings = cloneSettings(playerSpecificSettings);
+        playerSpecificSettings->reduceDebris = overrideMode;
+    }
+
+    MenuTransitionsHelper_StartStandardLevel(self, gameMode, difficultyBeatmap, overrideEnvironmentSettings, overrideColorScheme, gameplayModifiers, playerSpecificSettings, practiceSettings, backButtonText, useTestNoteCutSoundEffects, beforeSceneSwitchCallback, afterSceneSwitchCallback, levelFinishedCallback);
+}
+
+// (even) larger hook called when a multiplayer level is starting
+MAKE_HOOK_OFFSETLESS(MenuTransitionsHelper_StartMultiplayerLevel, void, MenuTransitionsHelper* self,
+                    Il2CppString* gameMode, Il2CppObject* previewBeatmapLevel, int beatmapDifficulty,
+                    Il2CppObject* beatmapCharacteristic, IDifficultyBeatmap* difficultyBeatmap,
+                    Il2CppObject* overrideColorScheme, Il2CppObject* gameplayModifiers,
+                    PlayerSpecificSettings* playerSpecificSettings, Il2CppObject* practiceSettings,
+                    Il2CppString* backButtonText, bool useTestNoteCutSoundEffects, Il2CppObject* beforeSceneSwitchCallback,
+                    Il2CppObject* afterSceneSwitchCallback, Il2CppObject* levelFinishedCallback, Il2CppObject* didDisconnectCallback) {
+    overrideIfNecessary(difficultyBeatmap->get_level(), difficultyBeatmap);
+
+    // If we need to override the setting, make a new copy of the player settings and change it
+    if(willOverride)    {
+        getLogger().info("Overriding setting on level start . . .");
+        playerSpecificSettings = cloneSettings(playerSpecificSettings);
+        playerSpecificSettings->reduceDebris = overrideMode;
+    }
+
+    
+    MenuTransitionsHelper_StartMultiplayerLevel(self, gameMode, previewBeatmapLevel, beatmapDifficulty, beatmapCharacteristic, difficultyBeatmap, overrideColorScheme, gameplayModifiers, playerSpecificSettings, practiceSettings, backButtonText, useTestNoteCutSoundEffects, beforeSceneSwitchCallback, afterSceneSwitchCallback, levelFinishedCallback, didDisconnectCallback);
+}
+
+static BeatmapLevelsModel* beatmapLevelsModel = nullptr;
+// Finds the BeatmapLevelsModel, if it hasn't been found already
+BeatmapLevelsModel* getBeatmapLevelsModel() {
+    // If the model hasn't already been found, find it using Resources
+    if(!beatmapLevelsModel) {
+        beatmapLevelsModel = (*UnityEngine::Resources::FindObjectsOfTypeAll<BeatmapLevelsModel*>())[0];
+    }
+    return beatmapLevelsModel;
+}
+
+// Called whenever the user selects a difficulty of a level. Used to decide whether or not to override the debris setting
+MAKE_HOOK_OFFSETLESS(RefreshContent, void, StandardLevelDetailView* self)    {
+    RefreshContent(self);
+
+    getLogger().info("StandardLevelDetailView_RefreshContent");
+    
+    // Find the selected difficulty
+    IDifficultyBeatmap* difficulty = self->selectedDifficultyBeatmap;
+    IBeatmapLevel* level = difficulty->get_level();
+
+    overrideIfNecessary(level, difficulty);
+}
+
 void createDefaultConfig()  {
     ConfigDocument& config = getConfig().config;
     // Find if the config has been created
@@ -213,7 +244,8 @@ extern "C" void load() {
 
     // Install our hooks
     INSTALL_HOOK_OFFSETLESS(getLogger(), RefreshContent, il2cpp_utils::FindMethodUnsafe("", "StandardLevelDetailView", "RefreshContent", 0));
-    INSTALL_HOOK_OFFSETLESS(getLogger(), StandardLevelStart, il2cpp_utils::FindMethodUnsafe("", "MenuTransitionsHelper", "StartStandardLevel", 12));
+    INSTALL_HOOK_OFFSETLESS(getLogger(), MenuTransitionsHelper_StartStandardLevel, il2cpp_utils::FindMethodUnsafe("", "MenuTransitionsHelper", "StartStandardLevel", 12));
+    INSTALL_HOOK_OFFSETLESS(getLogger(), MenuTransitionsHelper_StartMultiplayerLevel, il2cpp_utils::FindMethodUnsafe("", "MenuTransitionsHelper", "StartMultiplayerLevel", 15));
 
     getLogger().info("Installed all hooks!");
 }

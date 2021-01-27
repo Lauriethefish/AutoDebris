@@ -9,7 +9,7 @@
     "Automatically enables or disables debris based on your NPS or playlist"
   ],
   "category": "Gameplay",
-  "gameVersion": "1.13.0",
+  "gameVersion": "1.13.2",
   "platform": "Quest",
   "components": [
     {
@@ -20,30 +20,6 @@
       "uninstallAction": {
         "removeLibraryFile": "libauto-debris.so"
       }
-    },
-    {
-      "type": "HookModLibrary",
-      "installAction": {
-        "installLibraryFile": "libbeatsaber-hook_1_0_9.so"
-      }
-    },
-    {
-      "type": "HookModLibrary",
-      "installAction": {
-        "installLibraryFile": "libcodegen_0_5_3.so"
-      }
-    },
-    {
-      "type": "HookModLibrary",
-      "installAction": {
-        "installLibraryFile": "libcustom-types.so"
-      }
-    },
-    {
-      "type": "HookModLibrary",
-      "installAction": {
-        "installLibraryFile": "libquestui.so"
-      }
-    },
+    }
   ]
 }

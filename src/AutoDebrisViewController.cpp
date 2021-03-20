@@ -39,7 +39,7 @@ void onThresholdToggleChange(AutoDebrisViewController* self, bool newValue) {
 }
 
 // Set the NPS threshold in the config whenever the value changes
-void onThresholdSettingChange(AutoDebrisViewController* self, float newValue)   {
+void onThresholdSettingChange(float newValue)   {
     getConfig().config["notesPerSecondThreshold"].SetDouble(newValue);
 }
 
@@ -88,7 +88,7 @@ void AutoDebrisViewController::DidActivate(bool firstActivation, bool addedToHie
         // Create a button to switch modes, assigning it to an action
         auto modeButtonPressAction = il2cpp_utils::MakeDelegate<UnityEngine::Events::UnityAction*>(
                     classof(UnityEngine::Events::UnityAction*), this, onModeChangeButtonClick);
-        this->modeSelectButton = QuestUI::BeatSaberUI::CreateUIButton(modeLayout->get_rectTransform(), "Currently " + modeToString(getOverrideMode()), modeButtonPressAction);
+        this->modeSelectButton = QuestUI::BeatSaberUI::CreateUIButton(modeLayout->get_rectTransform(), "Currently " + modeToString(getOverrideMode()), [this]{onModeChangeButtonClick(this);});
 
         // Layout for selecting the NPS threshold
         UnityEngine::UI::HorizontalLayoutGroup* thresholdLayout = QuestUI::BeatSaberUI::CreateHorizontalLayoutGroup(mainLayout->get_rectTransform());
@@ -101,17 +101,11 @@ void AutoDebrisViewController::DidActivate(bool firstActivation, bool addedToHie
         thresholdLayout->set_padding(UnityEngine::RectOffset::New_ctor(2, 2, 2, 2));
         thresholdLayout->set_childAlignment(UnityEngine::TextAnchor::UpperCenter);
 
-        // Create a toggle for enabling or disabling the threshold
-        auto thresholdToggleChangeAction = il2cpp_utils::MakeDelegate<UnityEngine::Events::UnityAction_1<bool>*>(
-            classof(UnityEngine::Events::UnityAction_1<bool>*), this, onThresholdToggleChange);
 
-        // Action for when the NPS threshold is changed
-        auto thresholdChangeAction = il2cpp_utils::MakeDelegate<UnityEngine::Events::UnityAction_1<float>*>(
-            classof(UnityEngine::Events::UnityAction_1<float>*), this, onThresholdSettingChange);
 
         double currentThresholdValue = getConfig().config["notesPerSecondThreshold"].GetDouble();
-        QuestUI::BeatSaberUI::CreateToggle(thresholdLayout->get_rectTransform(), "Enable NPS threshold", true, thresholdToggleChangeAction);
-        this->thresholdSetting = QuestUI::BeatSaberUI::CreateIncrementSetting(thresholdLayout->get_rectTransform(), "", 1, 0.5, currentThresholdValue, thresholdChangeAction);
+        QuestUI::BeatSaberUI::CreateToggle(thresholdLayout->get_rectTransform(), "Enable NPS threshold", true, [this](bool newValue) {onThresholdToggleChange(this, newValue);});
+        this->thresholdSetting = QuestUI::BeatSaberUI::CreateIncrementSetting(thresholdLayout->get_rectTransform(), "", 1, 0.5, currentThresholdValue, onThresholdSettingChange);
         // Call the threshold toggle change function to hide the setting if neceessary
         onThresholdToggleChange(this, currentThresholdValue != -1.0);
 
@@ -142,7 +136,9 @@ void AutoDebrisViewController::DidActivate(bool firstActivation, bool addedToHie
 
             UnityEngine::UI::HorizontalLayoutGroup* playlistRow = QuestUI::BeatSaberUI::CreateHorizontalLayoutGroup(playlistsLayout->get_rectTransform());
             // Create the toggle, setting the current value to whether or not the playlist is overridden
-            UnityEngine::UI::Toggle* toggle = QuestUI::BeatSaberUI::CreateToggle(playlistRow->get_rectTransform(), playlistName, isPlaylistOverridden(playlistName), playlistToggleAction);
+            UnityEngine::UI::Toggle* toggle = QuestUI::BeatSaberUI::CreateToggle(playlistRow->get_rectTransform(), playlistName, isPlaylistOverridden(playlistName),
+                [playlistName] (bool newValue) {onPlaylistSettingChange(il2cpp_utils::createcsstr(playlistName), newValue);}
+            );
         }
     }
 }

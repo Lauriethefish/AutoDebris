@@ -92,7 +92,8 @@ PlayerSpecificSettings* cloneSettings(PlayerSpecificSettings* settings) {
     clone->reduceDebris = settings->reduceDebris;
     clone->saberTrailIntensity = settings->saberTrailIntensity;
     clone->sfxVolume = settings->sfxVolume;
-    clone->staticLights = settings->staticLights;
+    clone->environmentEffectsFilterDefaultPreset = settings->environmentEffectsFilterDefaultPreset;
+    clone->environmentEffectsFilterExpertPlusPreset = settings->environmentEffectsFilterExpertPlusPreset;
     return clone;
 }
 

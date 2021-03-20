@@ -144,7 +144,7 @@ void overrideIfNecessary(IBeatmapLevel* level, IDifficultyBeatmap* difficulty) {
 
 // Very large hook called when a level is starting
 MAKE_HOOK_OFFSETLESS(MenuTransitionsHelper_StartStandardLevel, void, StandardLevelScenesTransitionSetupDataSO* self, Il2CppString* gameMode,
-                    IDifficultyBeatmap* difficultyBeatmap, OverrideEnvironmentSettings* overrideEnvironmentSettings,
+                    IDifficultyBeatmap* difficultyBeatmap, IPreviewBeatmapLevel* previewBeatmapLevel, OverrideEnvironmentSettings* overrideEnvironmentSettings,
                     ColorScheme* overrideColorScheme, GameplayModifiers* gameplayModifiers,
                     PlayerSpecificSettings* playerSpecificSettings, PracticeSettings* practiceSettings,
                     Il2CppString* backButtonText, bool useTestNoteCutSoundEffects, 
@@ -156,7 +156,7 @@ MAKE_HOOK_OFFSETLESS(MenuTransitionsHelper_StartStandardLevel, void, StandardLev
         playerSpecificSettings->reduceDebris = overrideMode;
     }
 
-    MenuTransitionsHelper_StartStandardLevel(self, gameMode, difficultyBeatmap, overrideEnvironmentSettings, overrideColorScheme, gameplayModifiers, playerSpecificSettings, practiceSettings, backButtonText, useTestNoteCutSoundEffects, beforeSceneSwitchCallback, afterSceneSwitchCallback, levelFinishedCallback);
+    MenuTransitionsHelper_StartStandardLevel(self, gameMode, difficultyBeatmap, previewBeatmapLevel, overrideEnvironmentSettings, overrideColorScheme, gameplayModifiers, playerSpecificSettings, practiceSettings, backButtonText, useTestNoteCutSoundEffects, beforeSceneSwitchCallback, afterSceneSwitchCallback, levelFinishedCallback);
 }
 
 // (even) larger hook called when a multiplayer level is starting
@@ -245,7 +245,7 @@ extern "C" void load() {
 
     // Install our hooks
     INSTALL_HOOK_OFFSETLESS(getLogger(), RefreshContent, il2cpp_utils::FindMethodUnsafe("", "StandardLevelDetailView", "RefreshContent", 0));
-    INSTALL_HOOK_OFFSETLESS(getLogger(), MenuTransitionsHelper_StartStandardLevel, il2cpp_utils::FindMethodUnsafe("", "MenuTransitionsHelper", "StartStandardLevel", 12));
+    INSTALL_HOOK_OFFSETLESS(getLogger(), MenuTransitionsHelper_StartStandardLevel, il2cpp_utils::FindMethodUnsafe("", "MenuTransitionsHelper", "StartStandardLevel", 13));
     INSTALL_HOOK_OFFSETLESS(getLogger(), MenuTransitionsHelper_StartMultiplayerLevel, il2cpp_utils::FindMethodUnsafe("", "MenuTransitionsHelper", "StartMultiplayerLevel", 15));
 
     getLogger().info("Installed all hooks!");

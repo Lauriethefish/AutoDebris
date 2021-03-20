@@ -2,7 +2,7 @@
   "configurations": [
     {
       "defines": [
-        "VERSION=\"0.1.4\"",
+        "VERSION=\"0.1.5\"",
         "__GNUC__",
         "__aarch64__"
       ],

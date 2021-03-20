@@ -6,8 +6,8 @@ if (-not ($PSVersionTable.PSEdition -eq "Core")) {
     $buildScript += ".cmd"
 }
 
-$ArchiveName = "auto-debris_v0.1.4.qmod"
-$TempArchiveName = "auto-debris_v0.1.4.qmod.zip"
+$ArchiveName = "auto-debris_v0.1.5.qmod"
+$TempArchiveName = "auto-debris_v0.1.5.qmod.zip"
 
 & $buildScript NDK_PROJECT_PATH=$PSScriptRoot APP_BUILD_SCRIPT=$PSScriptRoot/Android.mk NDK_APPLICATION_MK=$PSScriptRoot/Application.mk
 Compress-Archive -Path "./libs/arm64-v8a/libauto-debris.so", "./mod.json" -DestinationPath $TempArchiveName -Force

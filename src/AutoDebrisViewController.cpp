@@ -8,9 +8,13 @@
 #include "UnityEngine/UI/HorizontalLayoutGroup.hpp"
 #include "UnityEngine/RectOffset.hpp"
 #include "UnityEngine/Events/UnityAction.hpp"
+#include "UnityEngine/GameObject.hpp"
 
 #include "GlobalNamespace/IBeatmapLevelPack.hpp"
 #include "GlobalNamespace/IBeatmapLevelPackCollection.hpp"
+
+#include "TMPro/TextMeshProUGUI.hpp"
+using namespace TMPro;
 
 using namespace AutoDebris;
 DEFINE_CLASS(AutoDebrisViewController);
@@ -85,9 +89,7 @@ void AutoDebrisViewController::DidActivate(bool firstActivation, bool addedToHie
         // Add some text to explain what the toggle is for
         QuestUI::BeatSaberUI::CreateText(modeLayout->get_rectTransform(), "Choose mode");
 
-        // Create a button to switch modes, assigning it to an action
-        auto modeButtonPressAction = il2cpp_utils::MakeDelegate<UnityEngine::Events::UnityAction*>(
-                    classof(UnityEngine::Events::UnityAction*), this, onModeChangeButtonClick);
+        // Create a button to switch modes, assigning it to a function.
         this->modeSelectButton = QuestUI::BeatSaberUI::CreateUIButton(modeLayout->get_rectTransform(), "Currently " + modeToString(getOverrideMode()), [this]{onModeChangeButtonClick(this);});
 
         // Layout for selecting the NPS threshold
@@ -100,7 +102,6 @@ void AutoDebrisViewController::DidActivate(bool firstActivation, bool addedToHie
         thresholdLayout->get_gameObject()->AddComponent<QuestUI::Backgroundable*>()->ApplyBackground(il2cpp_utils::createcsstr("round-rect-panel"));
         thresholdLayout->set_padding(UnityEngine::RectOffset::New_ctor(2, 2, 2, 2));
         thresholdLayout->set_childAlignment(UnityEngine::TextAnchor::UpperCenter);
-
 
 
         double currentThresholdValue = getConfig().config["notesPerSecondThreshold"].GetDouble();
@@ -120,9 +121,9 @@ void AutoDebrisViewController::DidActivate(bool firstActivation, bool addedToHie
         // This is a grid, since one vertical list doesn't allow for enough room
         UnityEngine::UI::GridLayoutGroup* playlistsLayout = QuestUI::BeatSaberUI::CreateGridLayoutGroup(playlistsSectionLayout->get_rectTransform());
         playlistsLayout->set_constraint(UnityEngine::UI::GridLayoutGroup::Constraint::FixedColumnCount);
-        playlistsLayout->set_constraintCount(3);
-        playlistsLayout->set_cellSize(UnityEngine::Vector2(50.0f, 6.0f));
-        playlistsLayout->set_spacing(UnityEngine::Vector2(1.0f, 1.0f));
+        playlistsLayout->set_constraintCount(4);
+        playlistsLayout->set_cellSize(UnityEngine::Vector2(40.0f, 6.0f));
+        playlistsLayout->set_spacing(UnityEngine::Vector2(1.0f, 0.8f));
 
         // Find all the loaded playlists
         Array<IBeatmapLevelPack*>* loadedPlaylists = getBeatmapLevelsModel()->get_allLoadedBeatmapLevelPackCollection()->get_beatmapLevelPacks();
@@ -130,15 +131,21 @@ void AutoDebrisViewController::DidActivate(bool firstActivation, bool addedToHie
             IBeatmapLevelPack* playlist = loadedPlaylists->values[i];
             std::string playlistName = to_utf8(csstrtostr(playlist->get_packName()));
 
-            // Action for whenever this playlist setting is toggled
-            auto playlistToggleAction = il2cpp_utils::MakeDelegate<UnityEngine::Events::UnityAction_1<bool>*>(
-                classof(UnityEngine::Events::UnityAction_1<bool>*), il2cpp_utils::createcsstr(playlistName), onPlaylistSettingChange);
+            const int MAX_LENGTH = 1000000;
+            if(playlistName.length() > MAX_LENGTH) {
+                playlistName = playlistName.substr(0, MAX_LENGTH - 3) + "...";
+            }
 
             UnityEngine::UI::HorizontalLayoutGroup* playlistRow = QuestUI::BeatSaberUI::CreateHorizontalLayoutGroup(playlistsLayout->get_rectTransform());
             // Create the toggle, setting the current value to whether or not the playlist is overridden
             UnityEngine::UI::Toggle* toggle = QuestUI::BeatSaberUI::CreateToggle(playlistRow->get_rectTransform(), playlistName, isPlaylistOverridden(playlistName),
                 [playlistName] (bool newValue) {onPlaylistSettingChange(il2cpp_utils::createcsstr(playlistName), newValue);}
             );
+
+            UnityEngine::Transform* toggleParentTransform = toggle->get_transform()->GetParent();
+            TextMeshProUGUI* toggleText = toggleParentTransform->get_gameObject()->GetComponentInChildren<TextMeshProUGUI*>();
+            toggleText->set_overflowMode(TextOverflowModes::Ellipsis);
+            toggleText->set_fontSize(2.5);
         }
     }
 }
